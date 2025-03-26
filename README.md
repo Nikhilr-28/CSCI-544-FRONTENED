@@ -1,0 +1,2 @@
+# CSCI-544-FRONTENED
+The frontend of the NLP PROJECT
