@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import ChatHistory from './components/ChatHistory';
 import ChatWindow from './components/ChatWindow';
@@ -9,12 +8,37 @@ import { Session } from './models/session';
 import './App.css';
 
 function App() {
-  const [sessions, setSessions] = useState([
-    new Session(1, 'Session 1')
-  ]);
-  const [currentSessionId, setCurrentSessionId] = useState(1);
-  const [nextSessionId, setNextSessionId] = useState(2);
+  // Load initial sessions and current session ID from localStorage
+  const [sessions, setSessions] = useState(() => {
+    const savedSessions = localStorage.getItem('chatSessions');
+    return savedSessions 
+      ? JSON.parse(savedSessions).map(sessionData => 
+          new Session(sessionData.id, sessionData.name, sessionData.messages, sessionData.notes)
+        )
+      : [new Session(1, 'Session 1')];
+  });
+
+  const [currentSessionId, setCurrentSessionId] = useState(() => {
+    const savedCurrentSessionId = localStorage.getItem('currentSessionId');
+    return savedCurrentSessionId ? parseInt(savedCurrentSessionId, 10) : 1;
+  });
+
+  const [nextSessionId, setNextSessionId] = useState(() => {
+    const maxId = Math.max(...sessions.map(s => s.id), 0);
+    return maxId + 1;
+  });
+
   const webSocketService = useRef(null);
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('chatSessions', JSON.stringify(sessions));
+  }, [sessions]);
+
+  // Save current session ID to localStorage
+  useEffect(() => {
+    localStorage.setItem('currentSessionId', currentSessionId.toString());
+  }, [currentSessionId]);
 
   // Fetch sessions on component mount
   useEffect(() => {
@@ -22,7 +46,34 @@ function App() {
       try {
         const fetchedSessions = await getSessions();
         const sessionModels = fetchedSessions.map(Session.fromJSON);
-        setSessions(sessionModels);
+        
+        // Merge fetched sessions with existing sessions
+        setSessions(prevSessions => {
+          // Create a map of existing sessions for easy lookup
+          const existingSessionsMap = new Map(
+            prevSessions.map(session => [session.id, session])
+          );
+
+          // Add or update fetched sessions
+          sessionModels.forEach(fetchedSession => {
+            if (!existingSessionsMap.has(fetchedSession.id)) {
+              // Add new session if it doesn't exist
+              existingSessionsMap.set(fetchedSession.id, fetchedSession);
+            } else {
+              // Update existing session, preserving local modifications
+              const existingSession = existingSessionsMap.get(fetchedSession.id);
+              existingSessionsMap.set(fetchedSession.id, {
+                ...fetchedSession,
+                messages: existingSession.messages,
+                notes: existingSession.notes
+              });
+            }
+          });
+
+          // Convert map back to array and sort
+          return Array.from(existingSessionsMap.values())
+            .sort((a, b) => b.id - a.id);
+        });
       } catch (error) {
         console.error('Failed to fetch sessions:', error);
       }
@@ -93,7 +144,9 @@ function App() {
   const handleCreateSession = () => {
     const newSession = new Session(
       nextSessionId, 
-      `Session ${nextSessionId}`
+      `Session ${nextSessionId}`,  // This will set both name and title
+      [],  // Empty messages
+      ''   // Empty notes
     );
     
     setSessions(prevSessions => [newSession, ...prevSessions]);
