@@ -1,126 +1,235 @@
+/* Modern color palette - Updated with new theme colors */
+:root {
+  --primary-color: #F9CD05; /* Main theme color */
+  --secondary-color: #00ADEF; /* Accent color for interactive elements */
+  --static-text-color: #1D418C; /* Color for static text */
+  --background-light: #f4f6f7;
+  --background-dark: #ecf0f1;
+  --border-color: #bdc3c7;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+  color: var(--static-text-color);
+  background-color: var(--background-light);
+}
+
 /* Main layout */
 .app-container {
   display: flex;
   height: 100vh;
-  font-family: Arial, sans-serif;
+  max-width: 1600px;
+  margin: 0 auto;
+  background-color: white;
+  box-shadow: 0 4px 6px var(--shadow-color);
 }
 
 /* Chat history sidebar */
 .chat-history {
-  width: 200px;
-  border-right: 1px solid #ccc;
-  padding: 10px;
+  width: 300px;
+  background-color: var(--background-dark);
+  border-right: 1px solid var(--border-color);
+  padding: 20px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.chat-history h3 {
-  margin-top: 0;
+.current-session h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.2rem;
+  color: var(--static-text-color);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-color);
 }
 
-.chat-history ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.chat-history li {
-  padding: 8px;
+.chat-history .add-btn {
+  background-color: var(--primary-color);
+  color: var(--static-text-color);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s ease;
 }
 
-.chat-history li.active {
-  background-color: #f0f0f0;
-  font-weight: bold;
+.chat-history .add-btn:hover {
+  background-color: #F7BC05;
 }
 
-/* Main chat area containing chat window and notes */
+.session-history li {
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background-color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.session-history li:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.session-history li.active {
+  background-color: var(--primary-color);
+  color: var(--static-text-color);
+}
+
+/* Chat main area */
 .chat-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  background-color: white;
 }
 
-/* Chat window styles */
+/* Chat window */
 .chat-window {
-  flex: 1;
-  padding: 10px;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #ccc;
+  padding: 20px;
+  overflow: hidden;
 }
 
 .chat-window .messages {
-  flex: 1;
+  flex-grow: 1;
   overflow-y: auto;
-  padding: 10px;
-  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background-color: rgba(249, 205, 5, 0.1); /* Very light transparency of #F9CD05 */
+  border-radius: 10px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.chat-window .messages::before {
+  content: 'CSCI-544 GROUP 58 FIGHT ON✌️';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg);
+  font-size: 3rem;
+  color: rgba(249, 205, 5, 0.2); /* Very faint watermark */
+  font-weight: bold;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .chat-window .message {
-  margin-bottom: 8px;
-  padding: 5px 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  position: relative;
+  z-index: 2;
+  max-width: 80%;
+  margin-bottom: 12px;
+  padding: 10px 15px;
+  border-radius: 15px;
+  clear: both;
+  word-wrap: break-word;
+}
+
+.chat-window .user-message {
+  background-color: var(--secondary-color);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-window .bot-message {
+  background-color: var(--background-dark);
+  color: var(--static-text-color);
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
 }
 
 .chat-window .input-group {
   display: flex;
+  background-color: white;
+  border-radius: 30px;
   padding: 10px;
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .chat-window input[type="text"] {
-  flex: 1;
+  flex-grow: 1;
+  border: none;
   padding: 10px;
-  font-size: 16px;
+  font-size: 1rem;
+  background: transparent;
+  color: var(--static-text-color);
 }
 
 .chat-window button {
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 25px;
   padding: 10px 20px;
-  font-size: 16px;
   margin-left: 10px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-/* Chat notes panel styles */
+.chat-window button:hover {
+  background-color: #00A0E3;
+}
+
+/* Chat notes */
 .chat-notes {
-  height: 150px;
-  padding: 10px;
+  height: 200px;
+  padding: 15px;
+  background-color: var(--background-light);
 }
 
 .chat-notes textarea {
   width: 100%;
   height: 100%;
-  padding: 10px;
-  font-size: 16px;
-  resize: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.chat-history h3 {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chat-history .add-btn {
-  padding: 2px 8px;
   border: none;
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  resize: none;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  color: var(--static-text-color);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
   border-radius: 4px;
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-  font-size: 18px;
 }
 
-.chat-history .add-btn:hover {
-  background-color: #45a049;
-}
-
-.session-history h4 {
-  margin-top: 15px;
-  border-top: 1px solid #ddd;
-  padding-top: 10px;
-  color: #666;
+::-webkit-scrollbar-thumb:hover {
+  background: #F7BC05;
 }

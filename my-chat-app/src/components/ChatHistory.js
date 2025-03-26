@@ -8,6 +8,15 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onCreateSess
           Current Session
           <button className="add-btn" onClick={onCreateSession}>+</button>
         </h3>
+        {/* Add the current session to the list */}
+        {sessions.filter(session => session.id === currentSessionId).map((session) => (
+          <div 
+            key={session.id} 
+            className="current-session-item active"
+          >
+            {session.title}
+          </div>
+        ))}
       </div>
       <div className="session-history">
         <h4>History</h4>
@@ -16,6 +25,7 @@ const ChatHistory = ({ sessions, currentSessionId, onSelectSession, onCreateSess
             <li
               key={session.id}
               onClick={() => onSelectSession(session.id)}
+              className="session-item"
             >
               {session.title}
             </li>

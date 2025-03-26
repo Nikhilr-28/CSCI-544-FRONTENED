@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const ChatWindow = ({ messages, onSendMessage }) => {
   const [input, setInput] = useState('');
+  const messagesEndRef = useRef(null);
 
   const sendMessage = () => {
     if (input.trim() !== '') {
@@ -10,14 +11,23 @@ const ChatWindow = ({ messages, onSendMessage }) => {
     }
   };
 
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div className="chat-window">
       <div className="messages">
         {messages.map((msg, index) => (
-          <div key={index} className="message">
+          <div 
+            key={index} 
+            className={`message ${msg.startsWith('User:') ? 'user-message' : 'bot-message'}`}
+          >
             {msg}
           </div>
         ))}
+        <div ref={messagesEndRef} /> {/* Anchor for scrolling */}
       </div>
       <div className="input-group">
         <input

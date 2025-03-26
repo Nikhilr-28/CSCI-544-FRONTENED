@@ -8,6 +8,7 @@ const ChatNotes = ({ notes, onNotesChange }) => {
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         placeholder="Add notes for this conversation..."
+        rows={5}  // Added rows for better default size
       />
     </div>
   );

@@ -57,7 +57,16 @@ function App() {
   };
 
   const handleSelectSession = (sessionId) => {
-    setCurrentSessionId(sessionId);
+    console.log('Selecting session:', sessionId); // Debug log
+    
+    // Verify the session exists before setting it as current
+    const selectedSession = sessions.find(session => session.id === sessionId);
+    
+    if (selectedSession) {
+      setCurrentSessionId(sessionId);
+    } else {
+      console.error('Session not found:', sessionId);
+    }
   };
 
   const handleCreateSession = () => {
@@ -67,8 +76,14 @@ function App() {
       messages: [], 
       notes: '' 
     };
+    
+    // Ensure new session is prepended to sessions array
     setSessions(prevSessions => [newSession, ...prevSessions]);
-    setCurrentSessionId(nextSessionId);
+    
+    // Set current session to the new session
+    setCurrentSessionId(newSession.id);
+    
+    // Increment next session ID
     setNextSessionId(prevId => prevId + 1);
   };
 
