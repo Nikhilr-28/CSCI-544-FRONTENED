@@ -24,3 +24,5 @@ my-chat-app/
 │   └── index.js
 ├── package.json
 └── .env                   # WebSocket and API URLs
+
+![alt text](<my-chat-app/Directory check.jpg>)
