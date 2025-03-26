@@ -1,44 +1,53 @@
+// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import ChatHistory from './components/ChatHistory';
 import ChatWindow from './components/ChatWindow';
 import ChatNotes from './components/ChatNotes';
+import WebSocketService from './services/websocket';
+import { getSessions } from './services/api';
+import { Session } from './models/session';
 import './App.css';
-
-const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:8000/ws';
 
 function App() {
   const [sessions, setSessions] = useState([
-    { 
-      id: 1, 
-      title: 'Session 1', 
-      messages: [], 
-      notes: '' 
-    },
+    new Session(1, 'Session 1')
   ]);
   const [currentSessionId, setCurrentSessionId] = useState(1);
   const [nextSessionId, setNextSessionId] = useState(2);
-  const ws = useRef(null);
+  const webSocketService = useRef(null);
 
+  // Fetch sessions on component mount
   useEffect(() => {
-    ws.current = new WebSocket(WEBSOCKET_URL);
-
-    ws.current.onopen = () => {
-      console.log('WebSocket connected:', WEBSOCKET_URL);
+    const fetchSessions = async () => {
+      try {
+        const fetchedSessions = await getSessions();
+        const sessionModels = fetchedSessions.map(Session.fromJSON);
+        setSessions(sessionModels);
+      } catch (error) {
+        console.error('Failed to fetch sessions:', error);
+      }
     };
 
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    fetchSessions();
+  }, []);
+
+  // Initialize WebSocket
+  useEffect(() => {
+    const handleWebSocketMessage = (data) => {
       addMessageToSession(currentSessionId, {
         text: data.message,
         type: 'bot'
       });
     };
 
-    ws.current.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
+    webSocketService.current = new WebSocketService(handleWebSocketMessage);
+    webSocketService.current.connect();
 
-    return () => ws.current && ws.current.close();
+    return () => {
+      if (webSocketService.current) {
+        webSocketService.current.disconnect();
+      }
+    };
   }, [currentSessionId]);
 
   const addMessageToSession = (sessionId, message) => {
@@ -61,14 +70,13 @@ function App() {
     });
 
     // Send message via WebSocket
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({
-        sessionId: currentSessionId,
-        message,
-        notes: sessions.find(s => s.id === currentSessionId).notes
-      }));
-    } else {
-      console.error('WebSocket is not connected');
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+    if (webSocketService.current) {
+      webSocketService.current.sendMessage(
+        currentSessionId, 
+        message, 
+        currentSession.notes
+      );
     }
   };
 
@@ -83,12 +91,10 @@ function App() {
   };
 
   const handleCreateSession = () => {
-    const newSession = { 
-      id: nextSessionId, 
-      title: `Session ${nextSessionId}`, 
-      messages: [], 
-      notes: '' 
-    };
+    const newSession = new Session(
+      nextSessionId, 
+      `Session ${nextSessionId}`
+    );
     
     setSessions(prevSessions => [newSession, ...prevSessions]);
     setCurrentSessionId(newSession.id);
@@ -98,12 +104,15 @@ function App() {
   const handleNotesChange = (notes) => {
     setSessions(prevSessions =>
       prevSessions.map(session =>
-        session.id === currentSessionId ? { ...session, notes } : session
+        session.id === currentSessionId 
+          ? { ...session, notes } 
+          : session
       )
     );
   };
 
-  const currentSession = sessions.find(session => session.id === currentSessionId) || { messages: [], notes: '' };
+  const currentSession = sessions.find(session => session.id === currentSessionId) 
+    || new Session(1, 'Session 1');
 
   return (
     <div className="app-container">
