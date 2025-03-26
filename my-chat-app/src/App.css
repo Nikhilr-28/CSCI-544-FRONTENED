@@ -200,7 +200,7 @@ body {
 .chat-notes {
   height: 200px;
   padding: 15px;
-  background-color: var(--background-light);
+  background-color: rgba(249, 205, 5, 0.1); /* Matching chat window background */
 }
 
 .chat-notes textarea {

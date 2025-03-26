@@ -1,48 +1,55 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const ChatWindow = ({ messages, onSendMessage }) => {
-  const [input, setInput] = useState('');
+function ChatWindow({ messages, onSendMessage }) {
+  const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
 
-  const sendMessage = () => {
-    if (input.trim() !== '') {
-      onSendMessage(input);
-      setInput('');
+  const handleSendMessage = () => {
+    if (inputText.trim() !== '') {
+      onSendMessage(inputText);
+      setInputText('');
     }
   };
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSendMessage();
+    }
+  };
+
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
 
   return (
     <div className="chat-window">
       <div className="messages">
-        {messages.map((msg, index) => (
+        {messages.map((message, index) => (
           <div 
             key={index} 
-            className={`message ${msg.startsWith('User:') ? 'user-message' : 'bot-message'}`}
+            className={`message ${message.type}-message`}
           >
-            {msg}
+            {message.text}
           </div>
         ))}
-        <div ref={messagesEndRef} /> {/* Anchor for scrolling */}
+        <div ref={messagesEndRef} />
       </div>
       <div className="input-group">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') sendMessage();
-          }}
+        <input 
+          type="text" 
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Type your message..."
         />
-        <button onClick={sendMessage}>Send</button>
+        <button onClick={handleSendMessage}>Send</button>
       </div>
     </div>
   );
-};
+}
 
 export default ChatWindow;

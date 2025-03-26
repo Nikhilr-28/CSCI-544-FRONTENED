@@ -8,7 +8,12 @@ const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:800
 
 function App() {
   const [sessions, setSessions] = useState([
-    { id: 1, title: 'Session 1', messages: [], notes: '' },
+    { 
+      id: 1, 
+      title: 'Session 1', 
+      messages: [], 
+      notes: '' 
+    },
   ]);
   const [currentSessionId, setCurrentSessionId] = useState(1);
   const [nextSessionId, setNextSessionId] = useState(2);
@@ -23,7 +28,10 @@ function App() {
 
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      addMessageToSession(currentSessionId, `Bot: ${data.message}`);
+      addMessageToSession(currentSessionId, {
+        text: data.message,
+        type: 'bot'
+      });
     };
 
     ws.current.onclose = () => {
@@ -44,22 +52,27 @@ function App() {
   };
 
   const handleSendMessage = (message) => {
+    if (message.trim() === '') return;
+
+    // Immediately add user message to chat
+    addMessageToSession(currentSessionId, {
+      text: message,
+      type: 'user'
+    });
+
+    // Send message via WebSocket
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({
         sessionId: currentSessionId,
         message,
         notes: sessions.find(s => s.id === currentSessionId).notes
       }));
-      addMessageToSession(currentSessionId, `User: ${message}`);
     } else {
       console.error('WebSocket is not connected');
     }
   };
 
   const handleSelectSession = (sessionId) => {
-    console.log('Selecting session:', sessionId); // Debug log
-    
-    // Verify the session exists before setting it as current
     const selectedSession = sessions.find(session => session.id === sessionId);
     
     if (selectedSession) {
@@ -77,13 +90,8 @@ function App() {
       notes: '' 
     };
     
-    // Ensure new session is prepended to sessions array
     setSessions(prevSessions => [newSession, ...prevSessions]);
-    
-    // Set current session to the new session
     setCurrentSessionId(newSession.id);
-    
-    // Increment next session ID
     setNextSessionId(prevId => prevId + 1);
   };
 
