@@ -4,21 +4,16 @@ import ChatWindow from './components/ChatWindow';
 import ChatNotes from './components/ChatNotes';
 import './App.css';
 
-// The WebSocket URL will come from your environment variable
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'ws://localhost:8000/ws';
 
 function App() {
-  // Dummy data for chat sessions; in a real app, you'll fetch these from your backend.
   const [sessions, setSessions] = useState([
-    { id: 1, title: 'Session 1' },
-    { id: 2, title: 'Session 2' }
+    { id: 1, title: 'Session 1', messages: [], notes: '' },
   ]);
   const [currentSessionId, setCurrentSessionId] = useState(1);
-  const [messages, setMessages] = useState([]);
-  const [notes, setNotes] = useState('');
+  const [nextSessionId, setNextSessionId] = useState(2);
   const ws = useRef(null);
 
-  // Establish websocket connection on component mount
   useEffect(() => {
     ws.current = new WebSocket(WEBSOCKET_URL);
 
@@ -27,54 +22,82 @@ function App() {
     };
 
     ws.current.onmessage = (event) => {
-      // Assume the backend sends JSON with a message field
       const data = JSON.parse(event.data);
-      setMessages((prev) => [...prev, data.message]);
+      addMessageToSession(currentSessionId, `Bot: ${data.message}`);
     };
 
     ws.current.onclose = () => {
       console.log('WebSocket disconnected');
     };
 
-    return () => {
-      if (ws.current) ws.current.close();
-    };
-  }, []);
+    return () => ws.current && ws.current.close();
+  }, [currentSessionId]);
 
-  // Handle sending a message: send payload to backend via WebSocket and update local state.
+  const addMessageToSession = (sessionId, message) => {
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.id === sessionId
+          ? { ...session, messages: [...session.messages, message] }
+          : session
+      )
+    );
+  };
+
   const handleSendMessage = (message) => {
-    const payload = { sessionId: currentSessionId, message, notes };
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(payload));
-      setMessages((prev) => [...prev, message]);
+      ws.current.send(JSON.stringify({
+        sessionId: currentSessionId,
+        message,
+        notes: sessions.find(s => s.id === currentSessionId).notes
+      }));
+      addMessageToSession(currentSessionId, `User: ${message}`);
     } else {
       console.error('WebSocket is not connected');
     }
   };
 
-  // When a chat session is selected, load its data.
-  // For now, we clear messages/notes; later, fetch session data from your backend.
   const handleSelectSession = (sessionId) => {
     setCurrentSessionId(sessionId);
-    setMessages([]);
-    setNotes('');
   };
+
+  const handleCreateSession = () => {
+    const newSession = { 
+      id: nextSessionId, 
+      title: `Session ${nextSessionId}`, 
+      messages: [], 
+      notes: '' 
+    };
+    setSessions(prevSessions => [newSession, ...prevSessions]);
+    setCurrentSessionId(nextSessionId);
+    setNextSessionId(prevId => prevId + 1);
+  };
+
+  const handleNotesChange = (notes) => {
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.id === currentSessionId ? { ...session, notes } : session
+      )
+    );
+  };
+
+  const currentSession = sessions.find(session => session.id === currentSessionId) || { messages: [], notes: '' };
 
   return (
     <div className="app-container">
-      <ChatHistory 
-        sessions={sessions} 
-        onSelectSession={handleSelectSession} 
+      <ChatHistory
+        sessions={sessions}
         currentSessionId={currentSessionId}
+        onSelectSession={handleSelectSession}
+        onCreateSession={handleCreateSession}
       />
       <div className="chat-main">
-        <ChatWindow 
-          messages={messages} 
+        <ChatWindow
+          messages={currentSession.messages}
           onSendMessage={handleSendMessage}
         />
-        <ChatNotes 
-          notes={notes} 
-          onNotesChange={setNotes}
+        <ChatNotes
+          notes={currentSession.notes}
+          onNotesChange={handleNotesChange}
         />
       </div>
     </div>

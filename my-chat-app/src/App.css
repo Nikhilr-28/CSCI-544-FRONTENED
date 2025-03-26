@@ -97,3 +97,30 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+.chat-history h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-history .add-btn {
+  padding: 2px 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.chat-history .add-btn:hover {
+  background-color: #45a049;
+}
+
+.session-history h4 {
+  margin-top: 15px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  color: #666;
+}
