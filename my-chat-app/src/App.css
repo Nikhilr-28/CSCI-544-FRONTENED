@@ -1,0 +1,99 @@
+/* Main layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* Chat history sidebar */
+.chat-history {
+  width: 200px;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chat-history h3 {
+  margin-top: 0;
+}
+
+.chat-history ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.chat-history li {
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.chat-history li.active {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Main chat area containing chat window and notes */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat window styles */
+.chat-window {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #ccc;
+}
+
+.chat-window .messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+.chat-window .message {
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.chat-window .input-group {
+  display: flex;
+  padding: 10px;
+}
+
+.chat-window input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.chat-window button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* Chat notes panel styles */
+.chat-notes {
+  height: 150px;
+  padding: 10px;
+}
+
+.chat-notes textarea {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  font-size: 16px;
+  resize: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
